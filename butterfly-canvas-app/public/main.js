@@ -86,14 +86,12 @@ function animate(timestamp) {
   }
 }
 
-window.onload = () => {
+function startAnimation() {
+  if (fid) cancelAnimationFrame(fid);
   setSize();
   currentStep = 0;
   window.requestAnimationFrame(animate);
-};
+}
 
-window.onresize = () => {
-  setSize();
-  currentStep = 0;
-  window.requestAnimationFrame(animate);
-};
+window.onload = startAnimation;
+window.onresize = startAnimation;
