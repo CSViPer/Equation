@@ -1,6 +1,12 @@
 const canvas = document.getElementById('Canvas');
 const ctx = canvas.getContext('2d');
-let W, H, scf, fc = 0, θ = 0, fid;
+let W, H, scf, θ = 0, fid;
+const totalSteps = 360 * 6;
+let currentStep = 0;
+let prevX = 0, prevY = 0;
+
+const duration = 15 * 1000; // 15 seconds in ms
+let startTime = null;
 
 function setSize() {
   const pd = window.devicePixelRatio || 1;
@@ -20,47 +26,74 @@ function clear(color = "rgba(0,0,0,1)") {
   ctx.fillRect(0, 0, W, H);
 }
 
-function line(x1, y1, x2, y2) {
+function line(x1, y1, x2, y2, color) {
+  ctx.strokeStyle = color;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
 }
 
-function animate() {
-  clear();
+function getColor(i) {
+  return `rgb(
+    ${Math.abs(Math.sin(i / 360)) * 255},
+    ${Math.abs(Math.sin(i / 360 + Math.PI / 6)) * 255},
+    ${Math.abs(Math.sin(i / 360 - Math.PI / 6)) * 255}
+  )`;
+}
+
+function animate(timestamp) {
+  if (currentStep === 0) {
+    clear();
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    // Initialize first point
+    θ = 0;
+    let r = Math.exp(Math.sin(θ)) - 2 * Math.cos(4 * θ) + Math.pow(Math.sin((2 * θ - Math.PI) / 24), 5);
+    r *= scf;
+    prevX = r * Math.cos(θ);
+    prevY = -r * Math.sin(θ);
+    ctx.restore();
+    startTime = timestamp;
+  }
+
   ctx.save();
   ctx.translate(W / 2, H / 2);
 
-  let tempx = 0, tempy = 0;
-  for (let i = 0; i < 360 * 6; i++) {
-    θ = i * Math.PI / 180 / 6;
-    // Butterfly curve: r = e^sinθ - 2cos(4θ) + sin^5((2θ - π)/24)
+  // Calculate how many steps to draw this frame
+  let elapsed = timestamp - startTime;
+  let targetStep = Math.floor((elapsed / duration) * totalSteps);
+  targetStep = Math.min(targetStep, totalSteps);
+
+  for (; currentStep < targetStep; currentStep++) {
+    θ = currentStep * Math.PI / 180 / 6;
     let r = Math.exp(Math.sin(θ)) - 2 * Math.cos(4 * θ) + Math.pow(Math.sin((2 * θ - Math.PI) / 24), 5);
     r *= scf;
     let x = r * Math.cos(θ);
     let y = -r * Math.sin(θ);
 
-    ctx.strokeStyle = `rgb(
-      ${Math.abs(Math.sin(i / 360)) * 255},
-      ${Math.abs(Math.sin(i / 360 + Math.PI / 6)) * 255},
-      ${Math.abs(Math.sin(i / 360 - Math.PI / 6)) * 255}
-    )`;
+    let color = getColor(currentStep);
+    if (currentStep > 0) line(prevX, prevY, x, y, color);
 
-    if (i > 0) line(tempx, tempy, x, y);
-    tempx = x;
-    tempy = y;
+    prevX = x;
+    prevY = y;
   }
 
   ctx.restore();
-  fid = window.requestAnimationFrame(animate);
+
+  if (currentStep < totalSteps) {
+    fid = window.requestAnimationFrame(animate);
+  }
 }
 
 window.onload = () => {
   setSize();
-  animate();
+  currentStep = 0;
+  window.requestAnimationFrame(animate);
 };
 
 window.onresize = () => {
   setSize();
+  currentStep = 0;
+  window.requestAnimationFrame(animate);
 };
