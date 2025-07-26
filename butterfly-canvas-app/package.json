@@ -1,0 +1,27 @@
+{
+  "name": "butterfly-canvas-app",
+  "version": "1.0.0",
+  "description": "A canvas animation project that visualizes a butterfly pattern.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "live-server public",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "canvas",
+    "animation",
+    "butterfly"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "live-server": "^1.2.1"
+  },
+  "devDependencies": {},
+  "homepage": "https://yourusername.github.io/butterfly-canvas-app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/butterfly-canvas-app.git"
+  }
+}
